@@ -1,3 +1,4 @@
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -17,8 +18,11 @@ const PlanetsStack = createStackNavigator();
 function PlanetsScreen() {
   return (
     <PlanetsStack.Navigator>
-      <PlanetsStack.Screen name="Planets" component={Planets} />
-      {/* Add more screens related to planets if needed */}
+      <PlanetsStack.Screen
+        name="PlanetsList" // Changed from "Planets"
+        component={Planets}
+        options={{ title: "Planets" }} // This keeps the header saying "Planets"
+      />
     </PlanetsStack.Navigator>
   );
 }
@@ -27,8 +31,11 @@ const SpaceshipsStack = createStackNavigator();
 function SpaceshipsScreen() {
   return (
     <SpaceshipsStack.Navigator>
-      <SpaceshipsStack.Screen name="Spaceships" component={Spaceships} />
-      {/* Add more screens related to spaceships if needed */}
+      <SpaceshipsStack.Screen
+        name="SpaceshipsList" // Changed from "Spaceships"
+        component={Spaceships}
+        options={{ title: "Spaceships" }}
+      />
     </SpaceshipsStack.Navigator>
   );
 }
@@ -37,49 +44,57 @@ const FilmsStack = createStackNavigator();
 function FilmsScreen() {
   return (
     <FilmsStack.Navigator>
-      <FilmsStack.Screen name="Films" component={Films} />
-      {/* Add more screens related to films if needed */}
+      <FilmsStack.Screen
+        name="FilmsList" // Changed from "Films"
+        component={Films}
+        options={{ title: "Films" }}
+      />
     </FilmsStack.Navigator>
   );
 }
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Drawer.Navigator
-        drawerStyle={{
-          width: "70%",
-        }}
-        screenOptions={{ headerShown: false, drawerActiveTintColor: "#e91e63" }}
-      >
-        <Drawer.Screen
-          name="Planets"
-          component={PlanetsScreen}
-          options={{
-            drawerIcon: ({ color }) => (
-              <Ionicons name="planet" size={24} color={color} />
-            ),
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <Drawer.Navigator
+          screenOptions={{
+            headerShown: true,
+            drawerActiveTintColor: "#e91e63",
+            drawerStyle: {
+              width: "70%",
+            },
           }}
-        />
-        <Drawer.Screen
-          name="Spaceships"
-          component={SpaceshipsScreen}
-          options={{
-            drawerIcon: ({ color }) => (
-              <Ionicons name="rocket" size={24} color={color} />
-            ),
-          }}
-        />
-        <Drawer.Screen
-          name="Films"
-          component={FilmsScreen}
-          options={{
-            drawerIcon: ({ color }) => (
-              <Ionicons name="film" size={24} color={color} />
-            ),
-          }}
-        />
-      </Drawer.Navigator>
-    </NavigationContainer>
+        >
+          <Drawer.Screen
+            name="Planets"
+            component={PlanetsScreen}
+            options={{
+              drawerIcon: ({ color }) => (
+                <Ionicons name="planet" size={24} color={color} />
+              ),
+            }}
+          />
+          <Drawer.Screen
+            name="Spaceships"
+            component={SpaceshipsScreen}
+            options={{
+              drawerIcon: ({ color }) => (
+                <Ionicons name="rocket" size={24} color={color} />
+              ),
+            }}
+          />
+          <Drawer.Screen
+            name="Films"
+            component={FilmsScreen}
+            options={{
+              drawerIcon: ({ color }) => (
+                <Ionicons name="film" size={24} color={color} />
+              ),
+            }}
+          />
+        </Drawer.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
