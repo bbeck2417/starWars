@@ -59,7 +59,7 @@ export default function App() {
       <NavigationContainer>
         <Drawer.Navigator
           screenOptions={{
-            headerShown: true,
+            headerShown: false,
             drawerActiveTintColor: "#e91e63",
             drawerStyle: {
               width: "70%",
