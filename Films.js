@@ -4,7 +4,9 @@ import { View, Text, StyleSheet } from "react-native";
 export default function Films() {
   return (
     <View style={styles.container}>
-      <Text>Films: A New Hope, The Empire Strikes Back, Return of the Jedi...</Text>
+      <Text style={styles.text}>
+        Films: A New Hope, The Empire Strikes Back, Return of the Jedi...
+      </Text>
     </View>
   );
 }
@@ -15,5 +17,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+  },
+  text: {
+    padding: 20,
   },
 });

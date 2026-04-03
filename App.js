@@ -1,16 +1,14 @@
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
 
-// Import your Star Wars screens
 import Planets from "./Planets";
 import Spaceships from "./Spaceships";
 import Films from "./Films";
-
 
 const Drawer = createDrawerNavigator();
 
@@ -19,9 +17,9 @@ function PlanetsScreen() {
   return (
     <PlanetsStack.Navigator>
       <PlanetsStack.Screen
-        name="PlanetsList" // Changed from "Planets"
+        name="PlanetsList"
         component={Planets}
-        options={{ title: "Planets" }} // This keeps the header saying "Planets"
+        options={{ title: "Planets" }}
       />
     </PlanetsStack.Navigator>
   );
@@ -32,7 +30,7 @@ function SpaceshipsScreen() {
   return (
     <SpaceshipsStack.Navigator>
       <SpaceshipsStack.Screen
-        name="SpaceshipsList" // Changed from "Spaceships"
+        name="SpaceshipsList"
         component={Spaceships}
         options={{ title: "Spaceships" }}
       />
@@ -45,7 +43,7 @@ function FilmsScreen() {
   return (
     <FilmsStack.Navigator>
       <FilmsStack.Screen
-        name="FilmsList" // Changed from "Films"
+        name="FilmsList"
         component={Films}
         options={{ title: "Films" }}
       />
