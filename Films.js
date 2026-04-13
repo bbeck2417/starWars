@@ -6,35 +6,38 @@ import {
   StyleSheet,
   ActivityIndicator,
   TextInput,
+  Modal,
+  Button,
 } from "react-native";
 
 export default function Films() {
   const [films, setFilms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [submittedText, setSubmittedText] = useState("");
 
   useEffect(() => {
     fetch("https://www.swapi.tech/api/films")
       .then((response) => response.json())
       .then((json) => {
-        // Films API uses "result" (singular)
         setFilms(json.result);
         setLoading(false);
       })
       .catch((error) => console.error(error));
   }, []);
 
+  const handleSearchSubmit = () => {
+    setSubmittedText(searchText);
+    setModalVisible(true);
+  };
+
   const filteredData = films.filter((item) =>
     item.properties.title.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loaderText}>Loading Films...</Text>
-      </View>
-    );
+    return <ActivityIndicator size="large" style={styles.loader} />;
   }
 
   return (
@@ -44,14 +47,25 @@ export default function Films() {
         placeholder="Search Films..."
         value={searchText}
         onChangeText={setSearchText}
+        onSubmitEditing={handleSearchSubmit}
+        returnKeyType="search"
       />
+
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalInner}>
+            <Text style={styles.modalTitle}>You searched for:</Text>
+            <Text style={styles.modalText}>{submittedText}</Text>
+            <Button title="Close" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
 
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.uid}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            {/* Title is located in properties.title */}
             <Text style={styles.itemText}>{item.properties.title}</Text>
           </View>
         )}
@@ -61,37 +75,34 @@ export default function Films() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1, // Required for scrolling
-    backgroundColor: "#fff",
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loaderText: {
-    marginTop: 10,
-    color: "slategrey",
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  loader: { flex: 1, justifyContent: "center" },
   searchInput: {
-    padding: 10,
+    padding: 15,
     margin: 10,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    backgroundColor: "#f9f9f9",
+    borderColor: "#ddd",
+    borderRadius: 5,
   },
   item: {
     padding: 20,
-    marginVertical: 4,
-    marginHorizontal: 10,
     backgroundColor: "ghostwhite",
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
-  itemText: {
-    fontSize: 18,
-    color: "slategrey",
+  itemText: { fontSize: 18, color: "slategrey" },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
+  modalInner: {
+    backgroundColor: "white",
+    padding: 30,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalTitle: { fontSize: 16, fontWeight: "bold" },
+  modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
 });
