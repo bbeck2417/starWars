@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   StyleSheet,
   ActivityIndicator,
   TextInput,
@@ -61,15 +61,13 @@ export default function Films() {
         </View>
       </Modal>
 
-      <FlatList
-        data={filteredData}
-        keyExtractor={(item) => item.uid}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
+      <ScrollView>
+        {filteredData.map((item) => (
+          <View key={item.uid} style={styles.item}>
             <Text style={styles.itemText}>{item.properties.title}</Text>
           </View>
-        )}
-      />
+        ))}
+      </ScrollView>
     </View>
   );
 }
