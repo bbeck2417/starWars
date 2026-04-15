@@ -1,20 +1,20 @@
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"; // Import Tab Navigator
 import { createStackNavigator } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
-import { Platform } from "react-native";
+import { Platform } from "react-native"; // Import Platform utility
 
 import Planets from "./Planets";
 import Spaceships from "./Spaceships";
 import Films from "./Films";
 
 const Drawer = createDrawerNavigator();
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator(); // Initialize Tab Navigator
 
+// Stack Navigators for each screen to handle individual headers
 const PlanetsStack = createStackNavigator();
 function PlanetsScreen() {
   return (
@@ -55,8 +55,9 @@ function FilmsScreen() {
 }
 
 export default function App() {
+  // Shared screen options for icons and behavior
   const screenOptions = ({ route }) => ({
-    headerShown: false,
+    headerShown: false, // Hide navigator header because stacks have their own
     tabBarActiveTintColor: "#e91e63",
     drawerActiveTintColor: "#e91e63",
     tabBarIcon: ({ color, size }) => {
@@ -71,6 +72,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
+        {/* Render Tab Navigator for iOS */}
         {Platform.OS === "ios" && (
           <Tab.Navigator screenOptions={screenOptions}>
             <Tab.Screen name="Planets" component={PlanetsScreen} />
@@ -79,10 +81,11 @@ export default function App() {
           </Tab.Navigator>
         )}
 
+        {/* Render Drawer Navigator for Android */}
         {Platform.OS === "android" && (
           <Drawer.Navigator
             screenOptions={{
-              ...screenOptions({ route: {} }),
+              ...screenOptions({ route: {} }), // Reuse shared options
               drawerStyle: { width: "70%" },
             }}
           >
