@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Swipeable } from "react-native-gesture-handler";
 import {
   View,
   Text,
@@ -8,6 +9,7 @@ import {
   TextInput,
   Modal,
   Button,
+  TouchableOpacity,
 } from "react-native";
 
 export default function Spaceships() {
@@ -16,6 +18,7 @@ export default function Spaceships() {
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
+  const [selectedShip, setSelectedShip] = useState(null);
 
   useEffect(() => {
     fetch("https://www.swapi.tech/api/starships")
@@ -28,7 +31,13 @@ export default function Spaceships() {
   }, []);
 
   const handleSearchSubmit = () => {
+    setSelectedShip(null); // Clear any selection to show search result text
     setSubmittedText(searchText);
+    setModalVisible(true);
+  };
+
+  const handleShipSelect = (ship) => {
+    setSelectedShip(ship);
     setModalVisible(true);
   };
 
@@ -54,18 +63,44 @@ export default function Spaceships() {
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalInner}>
-            <Text style={styles.modalTitle}>You searched for:</Text>
-            <Text style={styles.modalText}>{submittedText}</Text>
-            <Button title="Close" onPress={() => setModalVisible(false)} />
+            {/* 1. Moved Title Logic Inside the Condition */}
+            {selectedShip ? (
+              <>
+                <Text style={styles.modalTitle}>Starship Details</Text>
+                <Text style={styles.modalText}>{selectedShip.name}</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.modalTitle}>You searched for:</Text>
+                <Text style={styles.modalText}>{submittedText}</Text>
+              </>
+            )}
+            <Button
+              title="Close"
+              onPress={() => {
+                setModalVisible(false);
+                setSelectedShip(null);
+              }}
+            />
           </View>
         </View>
       </Modal>
 
       <ScrollView>
         {filteredData.map((item) => (
-          <View key={item.uid} style={styles.item}>
-            <Text style={styles.itemText}>{item.name}</Text>
-          </View>
+          <Swipeable
+            key={item.uid}
+            /* 2. Trigger the modal as soon as the swipe begins */
+            onSwipeableWillOpen={() => handleShipSelect(item)}
+            /* We provide a minimal view so the Swipeable component has something to 'reveal' */
+            renderRightActions={() => <View style={styles.swipePlaceholder} />}
+          >
+            <View style={styles.item}>
+              <TouchableOpacity onPress={() => handleShipSelect(item)}>
+                <Text style={styles.itemText}>{item.name}</Text>
+              </TouchableOpacity>
+            </View>
+          </Swipeable>
         ))}
       </ScrollView>
     </View>
@@ -100,7 +135,13 @@ const styles = StyleSheet.create({
     padding: 30,
     borderRadius: 10,
     alignItems: "center",
+    minWidth: 250,
   },
   modalTitle: { fontSize: 16, fontWeight: "bold" },
   modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
+  /* Placeholder style to enable the swipe gesture */
+  swipePlaceholder: {
+    width: 1,
+    backgroundColor: "transparent",
+  },
 });

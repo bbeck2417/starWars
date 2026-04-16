@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Swipeable } from "react-native-gesture-handler";
 import {
   View,
   Text,
@@ -8,6 +9,7 @@ import {
   TextInput,
   Modal,
   Button,
+  TouchableOpacity,
 } from "react-native";
 
 export default function Planets() {
@@ -16,19 +18,26 @@ export default function Planets() {
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
+  const [selectedPlanet, setSelectedPlanet] = useState(null);
 
   useEffect(() => {
     fetch("https://www.swapi.tech/api/planets")
       .then((response) => response.json())
       .then((json) => {
-        setPlanets(json.results);
+        setPlanets(json.results); //
         setLoading(false);
       })
       .catch((error) => console.error(error));
   }, []);
 
   const handleSearchSubmit = () => {
+    setSelectedPlanet(null);
     setSubmittedText(searchText);
+    setModalVisible(true);
+  };
+
+  const handlePlanetSelect = (planet) => {
+    setSelectedPlanet(planet);
     setModalVisible(true);
   };
 
@@ -42,7 +51,6 @@ export default function Planets() {
 
   return (
     <View style={styles.container}>
-      {/* Search Input (Chapter 22) */}
       <TextInput
         style={styles.searchInput}
         placeholder="Enter search term..."
@@ -52,21 +60,44 @@ export default function Planets() {
         returnKeyType="search"
       />
 
-      {/* Search Result Modal (Chapter 23) */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalInner}>
-            <Text style={styles.modalTitle}>You searched for:</Text>
-            <Text style={styles.modalText}>{submittedText}</Text>
-            <Button title="Close" onPress={() => setModalVisible(false)} />
+            {selectedPlanet ? (
+              <>
+                <Text style={styles.modalTitle}>Planet Details</Text>
+                <Text style={styles.modalText}>{selectedPlanet.name}</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.modalTitle}>You searched for:</Text>
+                <Text style={styles.modalText}>{submittedText}</Text>
+              </>
+            )}
+            <Button
+              title="Close"
+              onPress={() => {
+                setModalVisible(false);
+                setSelectedPlanet(null);
+              }}
+            />
           </View>
         </View>
       </Modal>
+
       <ScrollView>
         {filteredData.map((item) => (
-          <View key={item.uid} style={styles.item}>
-            <Text style={styles.itemText}>{item.name}</Text>
-          </View>
+          <Swipeable
+            key={item.uid}
+            onSwipeableWillOpen={() => handlePlanetSelect(item)}
+            renderRightActions={() => <View style={styles.swipePlaceholder} />}
+          >
+            <View style={styles.item}>
+              <TouchableOpacity onPress={() => handlePlanetSelect(item)}>
+                <Text style={styles.itemText}>{item.name}</Text>
+              </TouchableOpacity>
+            </View>
+          </Swipeable>
         ))}
       </ScrollView>
     </View>
@@ -101,7 +132,9 @@ const styles = StyleSheet.create({
     padding: 30,
     borderRadius: 10,
     alignItems: "center",
+    minWidth: 250,
   },
   modalTitle: { fontSize: 16, fontWeight: "bold" },
   modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
+  swipePlaceholder: { width: 1, backgroundColor: "transparent" },
 });

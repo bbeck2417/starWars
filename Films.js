@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Swipeable } from "react-native-gesture-handler";
 import {
   View,
   Text,
@@ -8,6 +9,7 @@ import {
   TextInput,
   Modal,
   Button,
+  TouchableOpacity,
 } from "react-native";
 
 export default function Films() {
@@ -16,19 +18,26 @@ export default function Films() {
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
+  const [selectedFilm, setSelectedFilm] = useState(null); // Detail state
 
   useEffect(() => {
     fetch("https://www.swapi.tech/api/films")
       .then((response) => response.json())
       .then((json) => {
-        setFilms(json.result);
+        setFilms(json.result); //
         setLoading(false);
       })
       .catch((error) => console.error(error));
   }, []);
 
   const handleSearchSubmit = () => {
+    setSelectedFilm(null);
     setSubmittedText(searchText);
+    setModalVisible(true);
+  };
+
+  const handleFilmSelect = (film) => {
+    setSelectedFilm(film);
     setModalVisible(true);
   };
 
@@ -54,18 +63,43 @@ export default function Films() {
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalInner}>
-            <Text style={styles.modalTitle}>You searched for:</Text>
-            <Text style={styles.modalText}>{submittedText}</Text>
-            <Button title="Close" onPress={() => setModalVisible(false)} />
+            {selectedFilm ? (
+              <>
+                <Text style={styles.modalTitle}>Film Details</Text>
+                <Text style={styles.modalText}>
+                  {selectedFilm.properties.title}
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.modalTitle}>You searched for:</Text>
+                <Text style={styles.modalText}>{submittedText}</Text>
+              </>
+            )}
+            <Button
+              title="Close"
+              onPress={() => {
+                setModalVisible(false);
+                setSelectedFilm(null);
+              }}
+            />
           </View>
         </View>
       </Modal>
 
       <ScrollView>
         {filteredData.map((item) => (
-          <View key={item.uid} style={styles.item}>
-            <Text style={styles.itemText}>{item.properties.title}</Text>
-          </View>
+          <Swipeable
+            key={item.uid}
+            onSwipeableWillOpen={() => handleFilmSelect(item)}
+            renderRightActions={() => <View style={styles.swipePlaceholder} />}
+          >
+            <View style={styles.item}>
+              <TouchableOpacity onPress={() => handleFilmSelect(item)}>
+                <Text style={styles.itemText}>{item.properties.title}</Text>
+              </TouchableOpacity>
+            </View>
+          </Swipeable>
         ))}
       </ScrollView>
     </View>
@@ -100,7 +134,9 @@ const styles = StyleSheet.create({
     padding: 30,
     borderRadius: 10,
     alignItems: "center",
+    minWidth: 250,
   },
   modalTitle: { fontSize: 16, fontWeight: "bold" },
   modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
+  swipePlaceholder: { width: 1, backgroundColor: "transparent" },
 });
