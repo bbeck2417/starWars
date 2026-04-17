@@ -14,14 +14,19 @@ import {
   TouchableOpacity,
   Easing,
 } from "react-native";
+import LazyImage from "./LazyImage"; // component import
 
 export default function Films() {
+  const starWarsImage = require("./assets/lego_Star_Wars.jpg");
   const [films, setFilms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
   const [selectedFilm, setSelectedFilm] = useState(null);
+
+  // image import
+  const legoStarWars = require("./assets/lego_Star_Wars.jpg");
 
   const isFocused = useIsFocused();
 
@@ -64,6 +69,8 @@ export default function Films() {
         onSubmitEditing={handleSearchSubmit}
         returnKeyType="search"
       />
+      {/* Image Component import with Lazy Loading */}
+      <LazyImage source={legoStarWars} style={styles.headerImage} />
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
@@ -157,4 +164,13 @@ const styles = StyleSheet.create({
   modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
   // Placeholder style to enable the swipe gesture
   swipePlaceholder: { width: 1, backgroundColor: "transparent" },
+  // Style to center image and round border
+  headerImage: {
+    borderRadius: 20,
+    overflow: "hidden",
+    width: "80%",
+    alignSelf: "center",
+    height: 200,
+    marginBottom: 10,
+  },
 });

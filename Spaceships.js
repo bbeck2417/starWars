@@ -14,6 +14,7 @@ import {
   Button,
   TouchableOpacity,
 } from "react-native";
+import LazyImage from "./LazyImage";// component import
 
 export default function Spaceships() {
   const [starships, setStarships] = useState([]);
@@ -22,6 +23,8 @@ export default function Spaceships() {
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
   const [selectedShip, setSelectedShip] = useState(null);
+  // image import
+  const legoStarWars = require("./assets/lego_Star_Wars.jpg");
 
   const isFocused = useIsFocused();
 
@@ -64,6 +67,8 @@ export default function Spaceships() {
         onSubmitEditing={handleSearchSubmit}
         returnKeyType="search"
       />
+      {/* Image Component import with Lazy Loading */}
+      <LazyImage source={legoStarWars} style={styles.headerImage} />
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
@@ -157,5 +162,14 @@ const styles = StyleSheet.create({
   swipePlaceholder: {
     width: 1,
     backgroundColor: "transparent",
+  },
+  // Style to center image and round border
+  headerImage: {
+    borderRadius: 20,
+    overflow: "hidden",
+    width: "80%",
+    alignSelf: "center",
+    height: 200,
+    marginBottom: 10,
   },
 });
