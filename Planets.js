@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Swipeable } from "react-native-gesture-handler";
+import { useIsFocused } from "@react-navigation/native";
+import Animated, { SlideInRight } from "react-native-reanimated";
 import {
   View,
   Text,
@@ -19,6 +21,8 @@ export default function Planets() {
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
   const [selectedPlanet, setSelectedPlanet] = useState(null);
+
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     fetch("https://www.swapi.tech/api/planets")
@@ -86,23 +90,31 @@ export default function Planets() {
       </Modal>
       {/* ScrollView implemented */}
       <ScrollView>
-        {filteredData.map((item) => (
-          // Swipeable component implemented
-          <Swipeable
-            key={item.uid}
-            // Prop for displaying modal
-            onSwipeableWillOpen={() => handlePlanetSelect(item)}
-            // Prop for UI to show transparent background for swipe gesture
-            renderRightActions={() => <View style={styles.swipePlaceholder} />}
-          >
-            <View style={styles.item}>
-              {/* TouchableOpacity implemented with onPress function to display item text */}
-              <TouchableOpacity onPress={() => handlePlanetSelect(item)}>
-                <Text style={styles.itemText}>{item.name}</Text>
-              </TouchableOpacity>
-            </View>
-          </Swipeable>
-        ))}
+        {isFocused &&
+          filteredData.map((item, index) => (
+            <Animated.View
+              key={item.uid}
+              entering={SlideInRight.delay(index * 100)}
+            >
+              {/* // Swipeable component implemented */}
+              <Swipeable
+                key={item.uid}
+                // Prop for displaying modal
+                onSwipeableWillOpen={() => handlePlanetSelect(item)}
+                // Prop for UI to show transparent background for swipe gesture
+                renderRightActions={() => (
+                  <View style={styles.swipePlaceholder} />
+                )}
+              >
+                <View style={styles.item}>
+                  {/* TouchableOpacity implemented with onPress function to display item text */}
+                  <TouchableOpacity onPress={() => handlePlanetSelect(item)}>
+                    <Text style={styles.itemText}>{item.name}</Text>
+                  </TouchableOpacity>
+                </View>
+              </Swipeable>
+            </Animated.View>
+          ))}
       </ScrollView>
     </View>
   );

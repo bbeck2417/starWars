@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Swipeable } from "react-native-gesture-handler";
+import { useIsFocused } from "@react-navigation/native";
+import Animated, { SlideInRight } from "react-native-reanimated";
 import {
   View,
   Text,
@@ -10,6 +12,7 @@ import {
   Modal,
   Button,
   TouchableOpacity,
+  Easing,
 } from "react-native";
 
 export default function Films() {
@@ -19,6 +22,8 @@ export default function Films() {
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
   const [selectedFilm, setSelectedFilm] = useState(null);
+
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     fetch("https://www.swapi.tech/api/films")
@@ -88,23 +93,31 @@ export default function Films() {
       </Modal>
       {/* ScrollView implemented */}
       <ScrollView>
-        {filteredData.map((item) => (
-          // Swipeable component implemented
-          <Swipeable
-            key={item.uid}
-            // Prop for displaying modal
-            onSwipeableWillOpen={() => handleFilmSelect(item)}
-            // Prop for UI to show transparent background for swipe gesture
-            renderRightActions={() => <View style={styles.swipePlaceholder} />}
-          >
-            <View style={styles.item}>
-              {/* TouchableOpacity implemented with onPress function to display item text */}
-              <TouchableOpacity onPress={() => handleFilmSelect(item)}>
-                <Text style={styles.itemText}>{item.properties.title}</Text>
-              </TouchableOpacity>
-            </View>
-          </Swipeable>
-        ))}
+        {isFocused &&
+          filteredData.map((item, index) => (
+            <Animated.View
+              key={item.uid}
+              entering={SlideInRight.delay(index * 100)}
+            >
+              {/* // Swipeable component implemented */}
+              <Swipeable
+                key={item.uid}
+                // Prop for displaying modal
+                onSwipeableWillOpen={() => handleFilmSelect(item)}
+                // Prop for UI to show transparent background for swipe gesture
+                renderRightActions={() => (
+                  <View style={styles.swipePlaceholder} />
+                )}
+              >
+                <View style={styles.item}>
+                  {/* TouchableOpacity implemented with onPress function to display item text */}
+                  <TouchableOpacity onPress={() => handleFilmSelect(item)}>
+                    <Text style={styles.itemText}>{item.properties.title}</Text>
+                  </TouchableOpacity>
+                </View>
+              </Swipeable>
+            </Animated.View>
+          ))}
       </ScrollView>
     </View>
   );

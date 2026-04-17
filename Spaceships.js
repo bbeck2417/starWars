@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Swipeable } from "react-native-gesture-handler";
+/* module for triggering Animated view on focus (when the user navigates to the view) */
+import { useIsFocused } from "@react-navigation/native";
+import Animated, { SlideInRight } from "react-native-reanimated";
 import {
   View,
   Text,
@@ -19,6 +22,8 @@ export default function Spaceships() {
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
   const [selectedShip, setSelectedShip] = useState(null);
+
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     fetch("https://www.swapi.tech/api/starships")
@@ -86,23 +91,31 @@ export default function Spaceships() {
       </Modal>
       {/* ScrollView implemented */}
       <ScrollView>
-        {filteredData.map((item) => (
-          // Swipeable component implemented
-          <Swipeable
-            key={item.uid}
-            // Prop for displaying modal
-            onSwipeableWillOpen={() => handleShipSelect(item)}
-            // Prop for UI to show transparent background for swipe gesture
-            renderRightActions={() => <View style={styles.swipePlaceholder} />}
-          >
-            <View style={styles.item}>
-              {/* TouchableOpacity implemented with onPress function to display item text */}
-              <TouchableOpacity onPress={() => handleShipSelect(item)}>
-                <Text style={styles.itemText}>{item.name}</Text>
-              </TouchableOpacity>
-            </View>
-          </Swipeable>
-        ))}
+        {isFocused &&
+          filteredData.map((item, index) => (
+            <Animated.View
+              key={item.uid}
+              entering={SlideInRight.delay(index * 100)}
+            >
+              {/* // Swipeable component implemented */}
+              <Swipeable
+                key={item.uid}
+                // Prop for displaying modal
+                onSwipeableWillOpen={() => handleShipSelect(item)}
+                // Prop for UI to show transparent background for swipe gesture
+                renderRightActions={() => (
+                  <View style={styles.swipePlaceholder} />
+                )}
+              >
+                <View style={styles.item}>
+                  {/* TouchableOpacity implemented with onPress function to display item text */}
+                  <TouchableOpacity onPress={() => handleShipSelect(item)}>
+                    <Text style={styles.itemText}>{item.name}</Text>
+                  </TouchableOpacity>
+                </View>
+              </Swipeable>
+            </Animated.View>
+          ))}
       </ScrollView>
     </View>
   );
