@@ -31,7 +31,7 @@ export default function Spaceships() {
   }, []);
 
   const handleSearchSubmit = () => {
-    setSelectedShip(null); // Clear any selection to show search result text
+    setSelectedShip(null);
     setSubmittedText(searchText);
     setModalVisible(true);
   };
@@ -63,7 +63,6 @@ export default function Spaceships() {
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalInner}>
-            {/* 1. Moved Title Logic Inside the Condition */}
             {selectedShip ? (
               <>
                 <Text style={styles.modalTitle}>Starship Details</Text>
@@ -85,17 +84,19 @@ export default function Spaceships() {
           </View>
         </View>
       </Modal>
-
+      {/* ScrollView implemented */}
       <ScrollView>
         {filteredData.map((item) => (
+          // Swipeable component implemented
           <Swipeable
             key={item.uid}
-            /* 2. Trigger the modal as soon as the swipe begins */
+            // Prop for displaying modal
             onSwipeableWillOpen={() => handleShipSelect(item)}
-            /* We provide a minimal view so the Swipeable component has something to 'reveal' */
+            // Prop for UI to show transparent background for swipe gesture
             renderRightActions={() => <View style={styles.swipePlaceholder} />}
           >
             <View style={styles.item}>
+              {/* TouchableOpacity implemented with onPress function to display item text */}
               <TouchableOpacity onPress={() => handleShipSelect(item)}>
                 <Text style={styles.itemText}>{item.name}</Text>
               </TouchableOpacity>
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 16, fontWeight: "bold" },
   modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
-  /* Placeholder style to enable the swipe gesture */
+  // Placeholder style to enable the swipe gesture
   swipePlaceholder: {
     width: 1,
     backgroundColor: "transparent",

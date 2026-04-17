@@ -24,7 +24,7 @@ export default function Planets() {
     fetch("https://www.swapi.tech/api/planets")
       .then((response) => response.json())
       .then((json) => {
-        setPlanets(json.results); //
+        setPlanets(json.results);
         setLoading(false);
       })
       .catch((error) => console.error(error));
@@ -84,15 +84,19 @@ export default function Planets() {
           </View>
         </View>
       </Modal>
-
+      {/* ScrollView implemented */}
       <ScrollView>
         {filteredData.map((item) => (
+          // Swipeable component implemented
           <Swipeable
             key={item.uid}
+            // Prop for displaying modal
             onSwipeableWillOpen={() => handlePlanetSelect(item)}
+            // Prop for UI to show transparent background for swipe gesture
             renderRightActions={() => <View style={styles.swipePlaceholder} />}
           >
             <View style={styles.item}>
+              {/* TouchableOpacity implemented with onPress function to display item text */}
               <TouchableOpacity onPress={() => handlePlanetSelect(item)}>
                 <Text style={styles.itemText}>{item.name}</Text>
               </TouchableOpacity>
@@ -136,5 +140,6 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 16, fontWeight: "bold" },
   modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
+  // Placeholder style to enable the swipe gesture
   swipePlaceholder: { width: 1, backgroundColor: "transparent" },
 });

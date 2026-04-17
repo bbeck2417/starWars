@@ -18,13 +18,13 @@ export default function Films() {
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
-  const [selectedFilm, setSelectedFilm] = useState(null); // Detail state
+  const [selectedFilm, setSelectedFilm] = useState(null);
 
   useEffect(() => {
     fetch("https://www.swapi.tech/api/films")
       .then((response) => response.json())
       .then((json) => {
-        setFilms(json.result); //
+        setFilms(json.result);
         setLoading(false);
       })
       .catch((error) => console.error(error));
@@ -86,15 +86,19 @@ export default function Films() {
           </View>
         </View>
       </Modal>
-
+      {/* ScrollView implemented */}
       <ScrollView>
         {filteredData.map((item) => (
+          // Swipeable component implemented
           <Swipeable
             key={item.uid}
+            // Prop for displaying modal
             onSwipeableWillOpen={() => handleFilmSelect(item)}
+            // Prop for UI to show transparent background for swipe gesture
             renderRightActions={() => <View style={styles.swipePlaceholder} />}
           >
             <View style={styles.item}>
+              {/* TouchableOpacity implemented with onPress function to display item text */}
               <TouchableOpacity onPress={() => handleFilmSelect(item)}>
                 <Text style={styles.itemText}>{item.properties.title}</Text>
               </TouchableOpacity>
@@ -138,5 +142,6 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 16, fontWeight: "bold" },
   modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
+  // Placeholder style to enable the swipe gesture
   swipePlaceholder: { width: 1, backgroundColor: "transparent" },
 });
