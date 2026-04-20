@@ -14,7 +14,8 @@ import {
   Button,
   TouchableOpacity,
 } from "react-native";
-import LazyImage from "./LazyImage";// component import
+import LazyImage from "./LazyImage"; // component import
+import OfflineDetection from "./OfflineDetection"; //OfflineDetection import
 
 export default function Spaceships() {
   const [starships, setStarships] = useState([]);
@@ -69,6 +70,7 @@ export default function Spaceships() {
       />
       {/* Image Component import with Lazy Loading */}
       <LazyImage source={legoStarWars} style={styles.headerImage} />
+      <OfflineDetection />
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
