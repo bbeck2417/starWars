@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import LazyImage from "./LazyImage"; // component import
+import OfflineDetection from "./OfflineDetection"; //OfflineDetection import
 
 export default function Planets() {
   const [planets, setPlanets] = useState([]);
@@ -68,6 +69,8 @@ export default function Planets() {
       />
       {/* Image Component import with Lazy Loading */}
       <LazyImage source={legoStarWars} style={styles.headerImage} />
+      {/* Import for Offline Detection */}
+      <OfflineDetection />
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>

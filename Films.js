@@ -15,6 +15,7 @@ import {
   Easing,
 } from "react-native";
 import LazyImage from "./LazyImage"; // component import
+import OfflineDetection from "./OfflineDetection"; //OfflineDetection import
 
 export default function Films() {
   const starWarsImage = require("./assets/lego_Star_Wars.jpg");
@@ -71,6 +72,8 @@ export default function Films() {
       />
       {/* Image Component import with Lazy Loading */}
       <LazyImage source={legoStarWars} style={styles.headerImage} />
+      {/* Import for Offline Detection */}
+      <OfflineDetection />
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
