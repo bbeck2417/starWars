@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import { Swipeable } from "react-native-gesture-handler";
 import { useIsFocused } from "@react-navigation/native";
-import Animated, { SlideInRight } from "react-native-reanimated";
+import Animated, {
+  LinearTransition,
+  SlideInRight,
+} from "react-native-reanimated";
 import {
   View,
   Text,
-  ScrollView,
+  FlatList, // Switched from ScrollView
   StyleSheet,
   ActivityIndicator,
   TextInput,
@@ -13,72 +16,114 @@ import {
   Button,
   TouchableOpacity,
 } from "react-native";
-import LazyImage from "./LazyImage"; // component import
-import OfflineDetection from "./OfflineDetection"; //OfflineDetection import
+import LazyImage from "./LazyImage";
+import OfflineDetection from "./OfflineDetection";
 
-export default function Planets() {
-  const [planets, setPlanets] = useState([]);
+const FilmItem = memo(({ item, onSelect }) => {
+  return (
+    <Animated.View
+      entering={SlideInRight.duration(300)}
+      layout={LinearTransition.springify()}
+      key={item.uid}
+    >
+      <Swipeable
+        renderRightActions={() => <View style={styles.swipePlaceholder} />}
+        onSwipeableWillOpen={() => onSelect(item)}
+      >
+        <View style={styles.item}>
+          <TouchableOpacity onPress={() => onSelect(item)}>
+            <Text style={styles.itemText}>{item.properties.title}</Text>
+          </TouchableOpacity>
+        </View>
+      </Swipeable>
+    </Animated.View>
+  );
+});
+
+export default function Films() {
+  const [films, setFilms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
-  const [selectedPlanet, setSelectedPlanet] = useState(null);
-  // image import
-  const legoStarWars = require("./assets/lego_Star_Wars.jpg");
+  const [selectedFilm, setSelectedFilm] = useState(null);
 
+  const legoStarWars = require("./assets/lego_Star_Wars.jpg");
   const isFocused = useIsFocused();
 
   useEffect(() => {
-    fetch("https://www.swapi.tech/api/planets")
+    fetch("https://www.swapi.tech/api/films")
       .then((response) => response.json())
       .then((json) => {
-        setPlanets(json.results);
+        setFilms(json.result);
         setLoading(false);
       })
       .catch((error) => console.error(error));
   }, []);
 
   const handleSearchSubmit = () => {
-    setSelectedPlanet(null);
+    setSelectedFilm(null);
     setSubmittedText(searchText);
+    // Modal is no longer triggered here per assignment instructions
+  };
+
+  const handleFilmSelect = (film) => {
+    setSelectedFilm(film);
     setModalVisible(true);
   };
 
-  const handlePlanetSelect = (planet) => {
-    setSelectedPlanet(planet);
-    setModalVisible(true);
-  };
-
-  const filteredData = planets.filter((item) =>
-    item.name.toLowerCase().includes(searchText.toLowerCase()),
+  // Real-time filtering logic
+  const filteredData = films.filter((item) =>
+    item.properties.title.toLowerCase().includes(searchText.toLowerCase()),
+  );
+  const renderItem = ({ item }) => (
+    <FilmItem item={item} onSelect={handleFilmSelect} />
   );
 
   if (loading) {
     return <ActivityIndicator size="large" style={styles.loader} />;
   }
 
+  // Define the render function for the FlatList items
+  const renderFilmItem = ({ item }) => (
+    <Animated.View entering={SlideInRight.duration(400)} key={item.uid}>
+      <Swipeable
+        onSwipeableWillOpen={() => handleFilmSelect(item)}
+        renderRightActions={() => <View style={styles.swipePlaceholder} />}
+      >
+        <View style={styles.item}>
+          <TouchableOpacity onPress={() => handleFilmSelect(item)}>
+            <Text style={styles.itemText}>{item.properties.title}</Text>
+          </TouchableOpacity>
+        </View>
+      </Swipeable>
+    </Animated.View>
+  );
+
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.searchInput}
-        placeholder="Enter search term..."
+        placeholder="Search Films..."
         value={searchText}
         onChangeText={setSearchText}
         onSubmitEditing={handleSearchSubmit}
         returnKeyType="search"
+        clearButtonMode="while-editing"
       />
-      {/* Image Component import with Lazy Loading */}
+
       <LazyImage source={legoStarWars} style={styles.headerImage} />
-      {/* Import for Offline Detection */}
       <OfflineDetection />
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalInner}>
-            {selectedPlanet ? (
+            {selectedFilm ? (
               <>
-                <Text style={styles.modalTitle}>Planet Details</Text>
-                <Text style={styles.modalText}>{selectedPlanet.name}</Text>
+                <Text style={styles.modalTitle}>Film Details</Text>
+                <Text style={styles.modalText}>
+                  {selectedFilm.properties.title}
+                </Text>
               </>
             ) : (
               <>
@@ -90,40 +135,27 @@ export default function Planets() {
               title="Close"
               onPress={() => {
                 setModalVisible(false);
-                setSelectedPlanet(null);
+                setSelectedFilm(null);
               }}
             />
           </View>
         </View>
       </Modal>
-      {/* ScrollView implemented */}
-      <ScrollView>
-        {isFocused &&
-          filteredData.map((item, index) => (
-            <Animated.View
-              key={item.uid}
-              entering={SlideInRight.delay(index * 100)}
-            >
-              {/* // Swipeable component implemented */}
-              <Swipeable
-                key={item.uid}
-                // Prop for displaying modal
-                onSwipeableWillOpen={() => handlePlanetSelect(item)}
-                // Prop for UI to show transparent background for swipe gesture
-                renderRightActions={() => (
-                  <View style={styles.swipePlaceholder} />
-                )}
-              >
-                <View style={styles.item}>
-                  {/* TouchableOpacity implemented with onPress function to display item text */}
-                  <TouchableOpacity onPress={() => handlePlanetSelect(item)}>
-                    <Text style={styles.itemText}>{item.name}</Text>
-                  </TouchableOpacity>
-                </View>
-              </Swipeable>
-            </Animated.View>
-          ))}
-      </ScrollView>
+
+      {/* CHAPTER 19: Implementing FlatList for stable list rendering */}
+      {isFocused && (
+        <FlatList
+          data={filteredData}
+          keyExtractor={(item) => item.uid}
+          renderItem={renderItem}
+          // Important for smooth animations during updates
+          removeClippedSubviews={false}
+          // Improves performance on long lists
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+        />
+      )}
     </View>
   );
 }
@@ -160,9 +192,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 16, fontWeight: "bold" },
   modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
-  // Placeholder style to enable the swipe gesture
   swipePlaceholder: { width: 1, backgroundColor: "transparent" },
-  // Style to center image and round border
   headerImage: {
     borderRadius: 20,
     overflow: "hidden",
