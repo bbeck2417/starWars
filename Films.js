@@ -1,24 +1,46 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import { Swipeable } from "react-native-gesture-handler";
 import { useIsFocused } from "@react-navigation/native";
-import Animated, { SlideInRight } from "react-native-reanimated";
+import Animated, {
+  LinearTransition,
+  SlideInRight,
+} from "react-native-reanimated";
 import {
   View,
   Text,
-  ScrollView,
+  FlatList, // Switched from ScrollView
   StyleSheet,
   ActivityIndicator,
   TextInput,
   Modal,
   Button,
   TouchableOpacity,
-  Easing,
 } from "react-native";
-import LazyImage from "./LazyImage"; // component import
-import OfflineDetection from "./OfflineDetection"; //OfflineDetection import
+import LazyImage from "./LazyImage";
+import OfflineDetection from "./OfflineDetection";
+
+const FilmItem = memo(({ item, onSelect }) => {
+  return (
+    <Animated.View
+      entering={SlideInRight.duration(300)}
+      layout={LinearTransition.springify()}
+      key={item.uid}
+    >
+      <Swipeable
+        renderRightActions={() => <View style={styles.swipePlaceholder} />}
+        onSwipeableWillOpen={() => onSelect(item)}
+      >
+        <View style={styles.item}>
+          <TouchableOpacity onPress={() => onSelect(item)}>
+            <Text style={styles.itemText}>{item.properties.title}</Text>
+          </TouchableOpacity>
+        </View>
+      </Swipeable>
+    </Animated.View>
+  );
+});
 
 export default function Films() {
-  const starWarsImage = require("./assets/lego_Star_Wars.jpg");
   const [films, setFilms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
@@ -26,9 +48,7 @@ export default function Films() {
   const [submittedText, setSubmittedText] = useState("");
   const [selectedFilm, setSelectedFilm] = useState(null);
 
-  // image import
   const legoStarWars = require("./assets/lego_Star_Wars.jpg");
-
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -44,7 +64,7 @@ export default function Films() {
   const handleSearchSubmit = () => {
     setSelectedFilm(null);
     setSubmittedText(searchText);
-    setModalVisible(true);
+    // Modal is no longer triggered here per assignment instructions
   };
 
   const handleFilmSelect = (film) => {
@@ -52,13 +72,33 @@ export default function Films() {
     setModalVisible(true);
   };
 
+  // Real-time filtering logic
   const filteredData = films.filter((item) =>
     item.properties.title.toLowerCase().includes(searchText.toLowerCase()),
+  );
+  const renderItem = ({ item }) => (
+    <FilmItem item={item} onSelect={handleFilmSelect} />
   );
 
   if (loading) {
     return <ActivityIndicator size="large" style={styles.loader} />;
   }
+
+  // Define the render function for the FlatList items
+  const renderFilmItem = ({ item }) => (
+    <Animated.View entering={SlideInRight.duration(400)} key={item.uid}>
+      <Swipeable
+        onSwipeableWillOpen={() => handleFilmSelect(item)}
+        renderRightActions={() => <View style={styles.swipePlaceholder} />}
+      >
+        <View style={styles.item}>
+          <TouchableOpacity onPress={() => handleFilmSelect(item)}>
+            <Text style={styles.itemText}>{item.properties.title}</Text>
+          </TouchableOpacity>
+        </View>
+      </Swipeable>
+    </Animated.View>
+  );
 
   return (
     <View style={styles.container}>
@@ -69,10 +109,10 @@ export default function Films() {
         onChangeText={setSearchText}
         onSubmitEditing={handleSearchSubmit}
         returnKeyType="search"
+        clearButtonMode="while-editing"
       />
-      {/* Image Component import with Lazy Loading */}
+
       <LazyImage source={legoStarWars} style={styles.headerImage} />
-      {/* Import for Offline Detection */}
       <OfflineDetection />
 
       <Modal visible={modalVisible} transparent animationType="slide">
@@ -101,34 +141,21 @@ export default function Films() {
           </View>
         </View>
       </Modal>
-      {/* ScrollView implemented */}
-      <ScrollView>
-        {isFocused &&
-          filteredData.map((item, index) => (
-            <Animated.View
-              key={item.uid}
-              entering={SlideInRight.delay(index * 100)}
-            >
-              {/* // Swipeable component implemented */}
-              <Swipeable
-                key={item.uid}
-                // Prop for displaying modal
-                onSwipeableWillOpen={() => handleFilmSelect(item)}
-                // Prop for UI to show transparent background for swipe gesture
-                renderRightActions={() => (
-                  <View style={styles.swipePlaceholder} />
-                )}
-              >
-                <View style={styles.item}>
-                  {/* TouchableOpacity implemented with onPress function to display item text */}
-                  <TouchableOpacity onPress={() => handleFilmSelect(item)}>
-                    <Text style={styles.itemText}>{item.properties.title}</Text>
-                  </TouchableOpacity>
-                </View>
-              </Swipeable>
-            </Animated.View>
-          ))}
-      </ScrollView>
+
+      {/* CHAPTER 19: Implementing FlatList for stable list rendering */}
+      {isFocused && (
+        <FlatList
+          data={filteredData}
+          keyExtractor={(item) => item.uid}
+          renderItem={renderItem}
+          // Important for smooth animations during updates
+          removeClippedSubviews={false}
+          // Improves performance on long lists
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+        />
+      )}
     </View>
   );
 }
@@ -165,9 +192,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 16, fontWeight: "bold" },
   modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
-  // Placeholder style to enable the swipe gesture
   swipePlaceholder: { width: 1, backgroundColor: "transparent" },
-  // Style to center image and round border
   headerImage: {
     borderRadius: 20,
     overflow: "hidden",

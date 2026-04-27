@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback, memo } from "react";
 import { Swipeable } from "react-native-gesture-handler";
 import { useIsFocused } from "@react-navigation/native";
 import Animated, {
-  LinearTransition,
   SlideInRight,
+  LinearTransition,
 } from "react-native-reanimated";
 import {
   View,
   Text,
-  FlatList, // Switched from ScrollView
+  FlatList,
   StyleSheet,
   ActivityIndicator,
   TextInput,
@@ -19,7 +19,8 @@ import {
 import LazyImage from "./LazyImage";
 import OfflineDetection from "./OfflineDetection";
 
-const FilmItem = memo(({ item, onSelect }) => {
+// Memoized Planet Item
+const PlanetItem = memo(({ item, onSelect }) => {
   return (
     <Animated.View
       entering={SlideInRight.duration(300)}
@@ -32,7 +33,7 @@ const FilmItem = memo(({ item, onSelect }) => {
       >
         <View style={styles.item}>
           <TouchableOpacity onPress={() => onSelect(item)}>
-            <Text style={styles.itemText}>{item.properties.title}</Text>
+            <Text style={styles.itemText}>{item.name}</Text>
           </TouchableOpacity>
         </View>
       </Swipeable>
@@ -40,71 +41,55 @@ const FilmItem = memo(({ item, onSelect }) => {
   );
 });
 
-export default function Films() {
-  const [films, setFilms] = useState([]);
+export default function Planets() {
+  const [planets, setPlanets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
-  const [selectedFilm, setSelectedFilm] = useState(null);
+  const [selectedPlanet, setSelectedPlanet] = useState(null);
 
   const legoStarWars = require("./assets/lego_Star_Wars.jpg");
   const isFocused = useIsFocused();
 
   useEffect(() => {
-    fetch("https://www.swapi.tech/api/films")
+    fetch("https://www.swapi.tech/api/planets")
       .then((response) => response.json())
       .then((json) => {
-        setFilms(json.result);
+        setPlanets(json.results);
         setLoading(false);
       })
       .catch((error) => console.error(error));
   }, []);
 
   const handleSearchSubmit = () => {
-    setSelectedFilm(null);
+    setSelectedPlanet(null);
     setSubmittedText(searchText);
-    // Modal is no longer triggered here per assignment instructions
+    // Modal display on search submit is now disabled
   };
 
-  const handleFilmSelect = (film) => {
-    setSelectedFilm(film);
+  const handlePlanetSelect = useCallback((planet) => {
+    setSelectedPlanet(planet);
     setModalVisible(true);
-  };
+  }, []);
 
-  // Real-time filtering logic
-  const filteredData = films.filter((item) =>
-    item.properties.title.toLowerCase().includes(searchText.toLowerCase()),
+  const filteredData = planets.filter((item) =>
+    item.name.toLowerCase().includes(searchText.toLowerCase()),
   );
+
   const renderItem = ({ item }) => (
-    <FilmItem item={item} onSelect={handleFilmSelect} />
+    <PlanetItem item={item} onSelect={handlePlanetSelect} />
   );
 
   if (loading) {
     return <ActivityIndicator size="large" style={styles.loader} />;
   }
 
-  // Define the render function for the FlatList items
-  const renderFilmItem = ({ item }) => (
-    <Animated.View entering={SlideInRight.duration(400)} key={item.uid}>
-      <Swipeable
-        onSwipeableWillOpen={() => handleFilmSelect(item)}
-        renderRightActions={() => <View style={styles.swipePlaceholder} />}
-      >
-        <View style={styles.item}>
-          <TouchableOpacity onPress={() => handleFilmSelect(item)}>
-            <Text style={styles.itemText}>{item.properties.title}</Text>
-          </TouchableOpacity>
-        </View>
-      </Swipeable>
-    </Animated.View>
-  );
-
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.searchInput}
-        placeholder="Search Films..."
+        placeholder="Enter search term..."
         value={searchText}
         onChangeText={setSearchText}
         onSubmitEditing={handleSearchSubmit}
@@ -118,42 +103,30 @@ export default function Films() {
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalInner}>
-            {selectedFilm ? (
-              <>
-                <Text style={styles.modalTitle}>Film Details</Text>
-                <Text style={styles.modalText}>
-                  {selectedFilm.properties.title}
-                </Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.modalTitle}>You searched for:</Text>
-                <Text style={styles.modalText}>{submittedText}</Text>
-              </>
-            )}
+            <Text style={styles.modalTitle}>
+              {selectedPlanet ? "Planet Details" : "You searched for:"}
+            </Text>
+            <Text style={styles.modalText}>
+              {selectedPlanet ? selectedPlanet.name : submittedText}
+            </Text>
             <Button
               title="Close"
               onPress={() => {
                 setModalVisible(false);
-                setSelectedFilm(null);
+                setSelectedPlanet(null);
               }}
             />
           </View>
         </View>
       </Modal>
 
-      {/* CHAPTER 19: Implementing FlatList for stable list rendering */}
       {isFocused && (
         <FlatList
           data={filteredData}
           keyExtractor={(item) => item.uid}
           renderItem={renderItem}
-          // Important for smooth animations during updates
           removeClippedSubviews={false}
-          // Improves performance on long lists
           initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
         />
       )}
     </View>
