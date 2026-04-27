@@ -14,6 +14,7 @@ import { Platform } from "react-native";
 import Planets from "./Planets";
 import Spaceships from "./Spaceships";
 import Films from "./Films";
+import SpaceshipDetail from "./SpaceshipDetail";
 
 
 const Drawer = createDrawerNavigator();
@@ -41,9 +42,17 @@ function SpaceshipsScreen() {
         component={Spaceships}
         options={{ title: "Spaceships" }}
       />
+      <SpaceshipsStack.Screen
+        name="SpaceshipDetail"
+        component={SpaceshipDetail}
+        options={{ title: "Ship Details" }}
+      />
     </SpaceshipsStack.Navigator>
   );
 }
+
+
+
 
 const FilmsStack = createStackNavigator();
 function FilmsScreen() {

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { useState, useEffect, useCallback, memo, useMemo } from "react";
 import { Swipeable } from "react-native-gesture-handler";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import Animated, {
   SlideInRight,
   LinearTransition,
@@ -28,7 +28,11 @@ const ShipItem = memo(({ item, onSelect }) => {
       key={item.uid}
     >
       <Swipeable
-        renderRightActions={() => <View style={styles.swipePlaceholder} />}
+        renderRightActions={() => (
+          <View style={styles.swipeActionContainer}>
+            <Text style={styles.swipeActionText}>Details</Text>
+          </View>
+        )}
         onSwipeableWillOpen={() => onSelect(item)}
       >
         <View style={styles.item}>
@@ -48,6 +52,7 @@ export default function Spaceships() {
   const [modalVisible, setModalVisible] = useState(false);
   const [submittedText, setSubmittedText] = useState("");
   const [selectedShip, setSelectedShip] = useState(null);
+  const navigation = useNavigation();
 
   const legoStarWars = require("./assets/lego_Star_Wars.jpg");
   const isFocused = useIsFocused();
@@ -68,14 +73,21 @@ export default function Spaceships() {
     // Modal display on search submit is now disabled
   };
 
-  const handleShipSelect = useCallback((ship) => {
-    setSelectedShip(ship);
-    setModalVisible(true);
-  }, []);
-
-  const filteredData = starships.filter((item) =>
-    item.name.toLowerCase().includes(searchText.toLowerCase()),
+  const handleShipSelect = useCallback(
+    (ship) => {
+      navigation.navigate("SpaceshipDetail", {
+        url: ship.url,
+        name: ship.name,
+      });
+    },
+    [navigation],
   );
+
+  const filteredData = useMemo(() => {
+    return starships.filter((item) =>
+      item.name.toLowerCase().includes(searchText.toLocaleLowerCase()),
+    );
+  }, [starships, searchText]);
 
   const renderItem = ({ item }) => (
     <ShipItem item={item} onSelect={handleShipSelect} />
@@ -99,26 +111,6 @@ export default function Spaceships() {
 
       <LazyImage source={legoStarWars} style={styles.headerImage} />
       <OfflineDetection />
-
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalInner}>
-            <Text style={styles.modalTitle}>
-              {selectedShip ? "Starship Details" : "You searched for:"}
-            </Text>
-            <Text style={styles.modalText}>
-              {selectedShip ? selectedShip.name : submittedText}
-            </Text>
-            <Button
-              title="Close"
-              onPress={() => {
-                setModalVisible(false);
-                setSelectedShip(null);
-              }}
-            />
-          </View>
-        </View>
-      </Modal>
 
       {isFocused && (
         <FlatList
@@ -150,22 +142,19 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
   },
   itemText: { fontSize: 18, color: "slategrey" },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modalInner: {
-    backgroundColor: "white",
-    padding: 30,
-    borderRadius: 10,
-    alignItems: "center",
-    minWidth: 250,
-  },
-  modalTitle: { fontSize: 16, fontWeight: "bold" },
-  modalText: { fontSize: 20, marginVertical: 15, color: "blue" },
+
   swipePlaceholder: { width: 1, backgroundColor: "transparent" },
+  swipeActionContainer: {
+    backgroundColor: "#e91e63",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingHorizontal: 20,
+    width: "100%",
+  },
+  swipeActionText: {
+    color: "white",
+    fontWeight: "bold",
+  },
   headerImage: {
     borderRadius: 20,
     overflow: "hidden",
